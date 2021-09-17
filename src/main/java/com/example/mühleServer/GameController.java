@@ -70,7 +70,7 @@ class GameController {
             int selectedFieldN = random.nextInt(8);
             int selectedFieldR = random.nextInt(3);
             try {
-                System.out.print("[" + game.getId() + "]Ai try: " + game.getState() + " " + selectedFieldR + "/" + selectedFieldN);
+                System.out.print("[" + game.getId() + "]Ai try: " + game.getState() + " \t" + selectedFieldR + "/" + selectedFieldN);
                 game.playTurn(selectedFieldR, selectedFieldN);
                 System.out.print("\n");
             } catch (IllegalMoveException e) {

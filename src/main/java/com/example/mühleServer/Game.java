@@ -240,6 +240,9 @@ class Game {
     }
 
     public boolean checkEnd() {
+        if(this.state == State.MOVING) {
+            return false;
+        }
         if (this.turn <= 18) {
             if ((this.getFieldCount(Field.P1) + ((17 - this.turn) / 2)) < 3) { this.state = State.P2WIN; return true; }
             if ((this.getFieldCount(Field.P2) + ((18 - this.turn) / 2)) < 3) { this.state = State.P1WIN; return true; }
