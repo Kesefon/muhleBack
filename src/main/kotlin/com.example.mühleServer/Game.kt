@@ -86,7 +86,7 @@ internal class Game {
         return false
     }
 
-    fun checkOnlyMühle(player: Player?): Boolean {
+    fun checkOnlyMühle(player: Player): Boolean {
         for (i in board.indices) {
             for (j in board[i].indices) {
                 when (player) {
@@ -221,8 +221,13 @@ internal class Game {
                         }
                     }
                 }
-                if ((Math.abs(selectedFieldR - movedFieldR) == 1 && selectedFieldN == movedFieldN && selectedFieldN % 2 == 1 || Math.abs(selectedFieldN - movedFieldN) == 1 && selectedFieldR == movedFieldR || selectedFieldN == 0 && movedFieldN == 7 && selectedFieldR) == movedFieldR || selectedFieldN == 7 && movedFieldN == 0 && selectedFieldR == movedFieldR ||
-                        jump) {
+                if (((Math.abs(selectedFieldR - movedFieldR) == 1 && selectedFieldN == movedFieldN &&
+                                selectedFieldN%2 == 1) ||
+                                (Math.abs(selectedFieldN - movedFieldN) == 1 && selectedFieldR == movedFieldR) ||
+                                (selectedFieldN == 0 && movedFieldN == 7 && selectedFieldR == movedFieldR) ||
+                                (selectedFieldN == 7 && movedFieldN == 0 && selectedFieldR == movedFieldR)) ||
+                        jump
+                ) {
                     when (currentPlayer) {
                         Player.P1 -> {
                             board[selectedFieldR][selectedFieldN] = Field.P1
@@ -245,6 +250,7 @@ internal class Game {
                     }
                 }
             }
+            State.DRAW, State.P1WIN, State.P2WIN -> {return}
         }
     }
 
