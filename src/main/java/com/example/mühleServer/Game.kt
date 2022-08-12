@@ -1,314 +1,328 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-
-import java.util.Objects;
-import java.util.Arrays;
+import java.util.*
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Lob
 
 @Entity
-class Game {
+internal class Game {
+    @Id
+    @GeneratedValue
+    var id: Long? = null
+    var currentPlayer: Player
+    var state: State
+    private var previousState: State
+    private var movedFieldR = 0
+    private var movedFieldN = 0
+    var turn = 0
 
-    private @Id @GeneratedValue Long id;
-    private Player currentPlayer;
-    private State state;
-    private State previousState;
-    private int movedFieldR;
-    private int movedFieldN;
-    private int turn;
-    private @Lob Field[][] board;
+    @Lob
+    var board: Array<Array<Field?>>
 
-    Game() {
-        this.currentPlayer = Player.P1;
-        this.board = new Field[3][8];
-        for (int i = 0; i < this.board.length; i++) {
-            Arrays.fill(this.board[i], Field.EMPTY);
+    init {
+        currentPlayer = Player.P1
+        board = Array(3) { arrayOfNulls(8) }
+        for (i in board.indices) {
+            Arrays.fill(board[i], Field.EMPTY)
         }
-        this.state = State.EARLYGAME;
-        this.previousState = this.state;
+        state = State.EARLYGAME
+        previousState = state
     }
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Player getCurrentPlayer() { return this.currentPlayer; }
-
-    public void setCurrentPlayer(Player player) { this.currentPlayer = player; }
-
-    public Field[][] getBoard() { return this.board; }
-
-    public void setBoard(Field[][] board) { this.board = board; }
-
-    public State getState() { return this.state; }
-
-    public void setState(State state) { this.state = state; }
-
-    private State getPreviousState() { return this.previousState; }
-
-    private void setPreviousState(State state) { this.previousState = state; }
-
-    public int getTurn() { return this.turn; }
-
-    public void setTurn(int turn) { this.turn = turn; }
-
-    private int getFieldCount(Field field) {
-        int result = 0;
-        for (int i=0; i < this.board.length; i++) {
-            for (int j=0; j < this.board[i].length; j++) {
-                if (this.board[i][j] == field) {
-                    result++;
+    private fun getFieldCount(field: Field): Int {
+        var result = 0
+        for (i in board.indices) {
+            for (j in board[i].indices) {
+                if (board[i][j] == field) {
+                    result++
                 }
             }
         }
-        return result;
+        return result
     }
 
-    public boolean checkMühle(int ring, int field) {
-        if (this.board[ring][field] == Field.EMPTY) { return false; }
-        switch (field) {
-            case 0 -> {
-                if ((this.board[ring][field] == this.board[ring][field + 1] &&
-                        this.board[ring][field] == this.board[ring][field + 2]) ||
-                        (this.board[ring][0] == this.board[ring][7] &&
-                                this.board[ring][0]== this.board[ring][6])) {
-                    return true;
+    fun checkMühle(ring: Int, field: Int): Boolean {
+        if (board[ring][field] == Field.EMPTY) {
+            return false
+        }
+        when (field) {
+            0 -> {
+                if ((board[ring][field] == board[ring][field + 1] &&
+                                board[ring][field] == board[ring][field + 2] || board[ring][0] == board[ring][7]) && board[ring][0] == board[ring][6]) {
+                    return true
                 }
             }
-            case 2,4 -> {
-                if ((this.board[ring][field] == this.board[ring][field + 1] &&
-                        this.board[ring][field]== this.board[ring][field + 2]) ||
-                        (this.board[ring][field] == this.board[ring][field - 1] &&
-                                this.board[ring][field] == this.board[ring][field - 2])) {
-                    return true;
+
+            2, 4 -> {
+                if (board[ring][field] == board[ring][field + 1] &&
+                        board[ring][field] == board[ring][field + 2] || board[ring][field] == board[ring][field - 1] && board[ring][field] == board[ring][field - 2]) {
+                    return true
                 }
             }
-            case 6 -> {
-                if ((this.board[ring][field] == this.board[ring][field - 1] &&
-                        this.board[ring][field] == this.board[ring][field - 2]) ||
-                        (this.board[ring][0] == this.board[ring][7] &&
-                                this.board[ring][0]== this.board[ring][6])) {
-                    return true;
+
+            6 -> {
+                if (board[ring][field] == board[ring][field - 1] &&
+                        board[ring][field] == board[ring][field - 2] || board[ring][0] == board[ring][7] && board[ring][0] == board[ring][6]) {
+                    return true
                 }
             }
-            case 1,3,5 -> {
-                if ((this.board[0][field] == this.board[1][field] &&
-                        this.board[0][field] == this.board[2][field]) ||
-                        (this.board[ring][field] == this.board[ring][field + 1] &&
-                                this.board[ring][field] == this.board[ring][field - 1])){
-                    return true;
+
+            1, 3, 5 -> {
+                if ((board[0][field] == board[1][field] &&
+                                board[0][field] == board[2][field] || board[ring][field] == board[ring][field + 1]) && board[ring][field] == board[ring][field - 1]) {
+                    return true
                 }
             }
-            case 7 -> {
-                if ((this.board[0][field] == this.board[1][field] &&
-                        this.board[0][field] == this.board[2][field]) ||
-                        (this.board[ring][field] == this.board[ring][0] &&
-                                this.board[ring][field] == this.board[ring][field - 1])) {
-                    return true;
+
+            7 -> {
+                if (board[0][field] == board[1][field] &&
+                        board[0][field] == board[2][field] || board[ring][field] == board[ring][0] && board[ring][field] == board[ring][field - 1]) {
+                    return true
                 }
             }
         }
-        return false;
+        return false
     }
 
-    public boolean checkOnlyMühle(Player player) {
-        for (int i=0; i < this.board.length; i++) {
-            for (int j = 0; j < this.board[i].length; j++) {
-                switch (player) {
-                    case P1 -> { if (this.board[i][j] == Field.P1) {
-                        if (!checkMühle(i, j)) { return false; }
-                    }}
-                    case P2 -> { if (this.board[i][j] == Field.P2) {
-                        if (!checkMühle(i, j)) { return false;}
-                    }}
+    fun checkOnlyMühle(player: Player?): Boolean {
+        for (i in board.indices) {
+            for (j in board[i].indices) {
+                when (player) {
+                    Player.P1 -> {
+                        if (board[i][j] == Field.P1) {
+                            if (!checkMühle(i, j)) {
+                                return false
+                            }
+                        }
+                    }
+
+                    Player.P2 -> {
+                        if (board[i][j] == Field.P2) {
+                            if (!checkMühle(i, j)) {
+                                return false
+                            }
+                        }
+                    }
                 }
             }
         }
-        return true;
+        return true
     }
 
-    public void playTurn(int selectedFieldR, int selectedFieldN) {
+    fun playTurn(selectedFieldR: Int, selectedFieldN: Int) {
         if ((0 > selectedFieldN || selectedFieldN > 7) && (0 > selectedFieldR || selectedFieldR > 2)) {
-            throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN);
+            throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
         }
-        switch (this.state) {
-            case EARLYGAME -> {
-                if(this.board[selectedFieldR][selectedFieldN] == Field.EMPTY) {
-                    switch (this.currentPlayer) {
-                        case P1 -> { this.board[selectedFieldR][selectedFieldN] = Field.P1; }
-                        case P2 -> { this.board[selectedFieldR][selectedFieldN] = Field.P2; }
+        when (state) {
+            State.EARLYGAME -> {
+                if (board[selectedFieldR][selectedFieldN] == Field.EMPTY) {
+                    when (currentPlayer) {
+                        Player.P1 -> {
+                            board[selectedFieldR][selectedFieldN] = Field.P1
+                        }
+
+                        Player.P2 -> {
+                            board[selectedFieldR][selectedFieldN] = Field.P2
+                        }
                     }
-                    this.turn++;
-                    if (this.turn == 18) {
-                        this.state = State.LATEGAME;
+                    turn++
+                    if (turn == 18) {
+                        state = State.LATEGAME
                     }
-                    this.checkEnd();
-                    if (this.checkMühle(selectedFieldR, selectedFieldN)) {
-                        this.previousState = this.state;
-                        this.state = State.STEALING;
-                        return;
+                    checkEnd()
+                    if (checkMühle(selectedFieldR, selectedFieldN)) {
+                        previousState = state
+                        state = State.STEALING
+                        return
                     }
-                    this.switchCurrentPlayer();
-                    this.checkEnd();
+                    switchCurrentPlayer()
+                    checkEnd()
+                } else {
+                    throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
                 }
-                else { throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN); }
-                return;
+                return
             }
-            case LATEGAME -> {
-                this.previousState = State.LATEGAME;
-                switch (this.currentPlayer) {
-                    case P1 -> { if(this.board[selectedFieldR][selectedFieldN] != Field.P1){
-                        throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN);
-                    }}
-                    case P2 -> { if(this.board[selectedFieldR][selectedFieldN] != Field.P2){
-                        throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN);
-                    }}
-                }
-                this.board[selectedFieldR][selectedFieldN] = Field.MOVED;
-                movedFieldR = selectedFieldR;
-                movedFieldN = selectedFieldN;
-                this.state = State.MOVING;
-                return;
-            }
-            case STEALING -> {
-                switch (this.currentPlayer) {
-                    case P1 -> { if((this.board[selectedFieldR][selectedFieldN] != Field.P2) ||
-                            (this.checkMühle(selectedFieldR,selectedFieldN) && !checkOnlyMühle(Player.P2))){
-                        throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN);
-                    }}
-                    case P2 -> { if((this.board[selectedFieldR][selectedFieldN] != Field.P1) ||
-                            (this.checkMühle(selectedFieldR,selectedFieldN) && !checkOnlyMühle(Player.P1))){
-                        throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN);
-                    }}
-                }
-                this.board[selectedFieldR][selectedFieldN] = Field.EMPTY;
-                this.state = this.previousState;
-                this.switchCurrentPlayer();
-                this.checkEnd();
-                return;
-            }
-            case MOVING -> {
-                if (this.board[selectedFieldR][selectedFieldN] == Field.MOVED) {
-                    switch (this.currentPlayer) {
-                        case P1 -> { this.board[selectedFieldR][selectedFieldN] = Field.P1; }
-                        case P2 -> { this.board[selectedFieldR][selectedFieldN] = Field.P2; }
+
+            State.LATEGAME -> {
+                previousState = State.LATEGAME
+                when (currentPlayer) {
+                    Player.P1 -> {
+                        if (board[selectedFieldR][selectedFieldN] != Field.P1) {
+                            throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
+                        }
                     }
-                    movedFieldN = -5;
-                    movedFieldR = -5;
-                    this.state = State.LATEGAME;
-                    return;
-                }
-                if (this.board[selectedFieldR][selectedFieldN] != Field.EMPTY) {
-                    throw new IllegalMoveException(this.state, selectedFieldR, selectedFieldN);
-                }
-                boolean jump = false;
-                switch (this.currentPlayer) {
-                    case P1 -> { if (getFieldCount(Field.P1) < 3) { jump = true; } }
-                    case P2 -> { if (getFieldCount(Field.P2) < 3) { jump = true; } }
-                }
-                if (((Math.abs(selectedFieldR - movedFieldR) == 1 && selectedFieldN == movedFieldN &&
-                        selectedFieldN%2 == 1) ||
-                        (Math.abs(selectedFieldN - movedFieldN) == 1 && selectedFieldR == movedFieldR) ||
-                        (selectedFieldN == 0 && movedFieldN == 7 && selectedFieldR == movedFieldR) ||
-                        (selectedFieldN == 7 && movedFieldN == 0 && selectedFieldR == movedFieldR)) ||
-                        jump
-                ) {
-                    switch (this.currentPlayer) {
-                        case P1 -> { this.board[selectedFieldR][selectedFieldN] = Field.P1; }
-                        case P2 -> { this.board[selectedFieldR][selectedFieldN] = Field.P2; }
+
+                    Player.P2 -> {
+                        if (board[selectedFieldR][selectedFieldN] != Field.P2) {
+                            throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
+                        }
                     }
-                    this.board[movedFieldR][movedFieldN] = Field.EMPTY;
-                    movedFieldN = -5;
-                    movedFieldR = -5;
-                    this.state = State.LATEGAME;
-                    this.turn++;
-                    if(checkMühle(selectedFieldR, selectedFieldN)) {
-                        this.state = State.STEALING;
+                }
+                board[selectedFieldR][selectedFieldN] = Field.MOVED
+                movedFieldR = selectedFieldR
+                movedFieldN = selectedFieldN
+                state = State.MOVING
+                return
+            }
+
+            State.STEALING -> {
+                when (currentPlayer) {
+                    Player.P1 -> {
+                        if (board[selectedFieldR][selectedFieldN] != Field.P2 || checkMühle(selectedFieldR, selectedFieldN) && !checkOnlyMühle(Player.P2)) {
+                            throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
+                        }
+                    }
+
+                    Player.P2 -> {
+                        if (board[selectedFieldR][selectedFieldN] != Field.P1 || checkMühle(selectedFieldR, selectedFieldN) && !checkOnlyMühle(Player.P1)) {
+                            throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
+                        }
+                    }
+                }
+                board[selectedFieldR][selectedFieldN] = Field.EMPTY
+                state = previousState
+                switchCurrentPlayer()
+                checkEnd()
+                return
+            }
+
+            State.MOVING -> {
+                if (board[selectedFieldR][selectedFieldN] == Field.MOVED) {
+                    when (currentPlayer) {
+                        Player.P1 -> {
+                            board[selectedFieldR][selectedFieldN] = Field.P1
+                        }
+
+                        Player.P2 -> {
+                            board[selectedFieldR][selectedFieldN] = Field.P2
+                        }
+                    }
+                    movedFieldN = -5
+                    movedFieldR = -5
+                    state = State.LATEGAME
+                    return
+                }
+                if (board[selectedFieldR][selectedFieldN] != Field.EMPTY) {
+                    throw IllegalMoveException(state, selectedFieldR, selectedFieldN)
+                }
+                var jump = false
+                when (currentPlayer) {
+                    Player.P1 -> {
+                        if (getFieldCount(Field.P1) < 3) {
+                            jump = true
+                        }
+                    }
+
+                    Player.P2 -> {
+                        if (getFieldCount(Field.P2) < 3) {
+                            jump = true
+                        }
+                    }
+                }
+                if ((Math.abs(selectedFieldR - movedFieldR) == 1 && selectedFieldN == movedFieldN && selectedFieldN % 2 == 1 || Math.abs(selectedFieldN - movedFieldN) == 1 && selectedFieldR == movedFieldR || selectedFieldN == 0 && movedFieldN == 7 && selectedFieldR) == movedFieldR || selectedFieldN == 7 && movedFieldN == 0 && selectedFieldR == movedFieldR ||
+                        jump) {
+                    when (currentPlayer) {
+                        Player.P1 -> {
+                            board[selectedFieldR][selectedFieldN] = Field.P1
+                        }
+
+                        Player.P2 -> {
+                            board[selectedFieldR][selectedFieldN] = Field.P2
+                        }
+                    }
+                    board[movedFieldR][movedFieldN] = Field.EMPTY
+                    movedFieldN = -5
+                    movedFieldR = -5
+                    state = State.LATEGAME
+                    turn++
+                    if (checkMühle(selectedFieldR, selectedFieldN)) {
+                        state = State.STEALING
                     } else {
-                        this.switchCurrentPlayer();
-                        this.checkEnd();
+                        switchCurrentPlayer()
+                        checkEnd()
                     }
                 }
             }
         }
     }
 
-    public boolean checkEnd() {
-        if(this.state == State.MOVING) {
-            return false;
+    fun checkEnd(): Boolean {
+        if (state == State.MOVING) {
+            return false
         }
-        if (this.turn <= 18) {
-            if ((this.getFieldCount(Field.P1) + ((17 - this.turn) / 2)) < 3) { this.state = State.P2WIN; return true; }
-            if ((this.getFieldCount(Field.P2) + ((18 - this.turn) / 2)) < 3) { this.state = State.P1WIN; return true; }
+        if (turn <= 18) {
+            if (getFieldCount(Field.P1) + (17 - turn) / 2 < 3) {
+                state = State.P2WIN
+                return true
+            }
+            if (getFieldCount(Field.P2) + (18 - turn) / 2 < 3) {
+                state = State.P1WIN
+                return true
+            }
+        } else {
+            if (getFieldCount(Field.P1) < 3 && !(currentPlayer == Player.P1 && getFieldCount(Field.MOVED) == 1)) {
+                state = State.P2WIN
+                return true
+            }
+            if (getFieldCount(Field.P2) < 3 && !(currentPlayer == Player.P2 && getFieldCount(Field.MOVED) == 1)) {
+                state = State.P1WIN
+                return true
+            }
         }
-        else {
-            if (this.getFieldCount(Field.P1) < 3 && !(this.currentPlayer == Player.P1 && this.getFieldCount(Field.MOVED) == 1)) {
-                this.state = State.P2WIN; return true; }
-            if (this.getFieldCount(Field.P2) < 3 && !(this.currentPlayer == Player.P2 && this.getFieldCount(Field.MOVED) == 1)) {
-                this.state = State.P1WIN; return true; }
-        }
+        return if (state == State.EARLYGAME || previousState == State.EARLYGAME) {
+            false
+        } else when (currentPlayer) {
+            Player.P1 -> {
+                if (getFieldCount(Field.P1) == 3) {
+                    return false
+                }
+                for (ring in board.indices) {
+                    for (field in board[ring].indices) {
+                        if (board[ring][field] == Field.P1) {
+                            when (field) {
+                                0 -> {
+                                    if (board[ring][field + 1] == Field.EMPTY ||
+                                            board[ring][7] == Field.EMPTY) {
+                                        return false
+                                    }
+                                }
 
-        if (this.state == State.EARLYGAME || this.previousState == State.EARLYGAME) { return false; }
+                                2, 4, 6 -> {
+                                    if (board[ring][field + 1] == Field.EMPTY ||
+                                            board[ring][field - 1] == Field.EMPTY) {
+                                        return false
+                                    }
+                                }
 
-        switch (this.currentPlayer) {
-            case P1 -> {
-                if (getFieldCount(Field.P1) == 3) { return false; }
-                for (int ring=0; ring < this.board.length; ring++) {
-                    for (int field=0; field < this.board[ring].length; field++) {
-                        if (this.board[ring][field] == Field.P1) {
-                            switch (field) {
-                                case 0 -> {
-                                    if (this.board[ring][field + 1] == Field.EMPTY ||
-                                            this.board[ring][7] == Field.EMPTY) {
-                                        return false;
-                                    }
-                                }
-                                case 2,4,6 -> {
-                                    if (this.board[ring][field + 1] == Field.EMPTY ||
-                                            this.board[ring][field - 1] == Field.EMPTY) {
-                                        return false;
-                                    }
-                                }
-                                case 1,3,5 -> {
-                                    switch (ring) {
-                                    case 0,2 -> {
-                                        if (this.board[ring][field + 1] == Field.EMPTY ||
-                                            this.board[ring][field - 1] == Field.EMPTY ||
-                                            this.board[1][field] == Field.EMPTY) {
-                                            return false;
-                                        }
-                                    }
-                                    case 1 -> {
-                                        if (this.board[ring][field + 1] == Field.EMPTY ||
-                                                this.board[ring][field - 1] == Field.EMPTY ||
-                                                this.board[0][field] == Field.EMPTY ||
-                                                this.board[2][field] == Field.EMPTY) {
-                                            return false;
-                                        }
-                                    }
-                                    }
-                                }
-                                case 7 -> {
-                                    switch (ring) {
-                                        case 0,2 -> {
-                                            if (this.board[ring][0] == Field.EMPTY ||
-                                                    this.board[ring][field - 1] == Field.EMPTY ||
-                                                    this.board[1][field] == Field.EMPTY) {
-                                                return false;
+                                1, 3, 5 -> {
+                                    when (ring) {
+                                        0, 2 -> {
+                                            if (board[ring][field + 1] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[1][field] == Field.EMPTY) {
+                                                return false
                                             }
                                         }
-                                        case 1 -> {
-                                            if (this.board[ring][0] == Field.EMPTY ||
-                                                    this.board[ring][field - 1] == Field.EMPTY ||
-                                                    this.board[0][field] == Field.EMPTY ||
-                                                    this.board[2][field] == Field.EMPTY) {
-                                                return false;
+
+                                        1 -> {
+                                            if (board[ring][field + 1] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[0][field] == Field.EMPTY || board[2][field] == Field.EMPTY) {
+                                                return false
+                                            }
+                                        }
+                                    }
+                                }
+
+                                7 -> {
+                                    when (ring) {
+                                        0, 2 -> {
+                                            if (board[ring][0] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[1][field] == Field.EMPTY) {
+                                                return false
+                                            }
+                                        }
+
+                                        1 -> {
+                                            if (board[ring][0] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[0][field] == Field.EMPTY || board[2][field] == Field.EMPTY) {
+                                                return false
                                             }
                                         }
                                     }
@@ -317,61 +331,59 @@ class Game {
                         }
                     }
                 }
-                this.state = State.P2WIN;
-                return true;
+                state = State.P2WIN
+                true
             }
-            case P2 -> {
-                if (getFieldCount(Field.P2) == 3) { return false; }
-                for (int ring=0; ring < this.board.length; ring++) {
-                    for (int field=0; field < this.board[ring].length; field++) {
-                        if (this.board[ring][field] == Field.P2) {
-                            switch (field) {
-                                case 0 -> {
-                                    if (this.board[ring][field + 1] == Field.EMPTY ||
-                                            this.board[ring][7] == Field.EMPTY) {
-                                        return false;
+
+            Player.P2 -> {
+                if (getFieldCount(Field.P2) == 3) {
+                    return false
+                }
+                for (ring in board.indices) {
+                    for (field in board[ring].indices) {
+                        if (board[ring][field] == Field.P2) {
+                            when (field) {
+                                0 -> {
+                                    if (board[ring][field + 1] == Field.EMPTY ||
+                                            board[ring][7] == Field.EMPTY) {
+                                        return false
                                     }
                                 }
-                                case 2,4,6 -> {
-                                    if (this.board[ring][field + 1] == Field.EMPTY ||
-                                            this.board[ring][field - 1] == Field.EMPTY) {
-                                        return false;
+
+                                2, 4, 6 -> {
+                                    if (board[ring][field + 1] == Field.EMPTY ||
+                                            board[ring][field - 1] == Field.EMPTY) {
+                                        return false
                                     }
                                 }
-                                case 1,3,5 -> {
-                                    switch (ring) {
-                                        case 0,2 -> {
-                                            if (this.board[ring][field + 1] == Field.EMPTY ||
-                                                    this.board[ring][field - 1] == Field.EMPTY ||
-                                                    this.board[1][field] == Field.EMPTY) {
-                                                return false;
+
+                                1, 3, 5 -> {
+                                    when (ring) {
+                                        0, 2 -> {
+                                            if (board[ring][field + 1] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[1][field] == Field.EMPTY) {
+                                                return false
                                             }
                                         }
-                                        case 1 -> {
-                                            if (this.board[ring][field + 1] == Field.EMPTY ||
-                                                    this.board[ring][field - 1] == Field.EMPTY ||
-                                                    this.board[0][field] == Field.EMPTY ||
-                                                    this.board[2][field] == Field.EMPTY) {
-                                                return false;
+
+                                        1 -> {
+                                            if (board[ring][field + 1] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[0][field] == Field.EMPTY || board[2][field] == Field.EMPTY) {
+                                                return false
                                             }
                                         }
                                     }
                                 }
-                                case 7 -> {
-                                    switch (ring) {
-                                        case 0,2 -> {
-                                            if (this.board[ring][0] == Field.EMPTY ||
-                                                    this.board[ring][field - 1] == Field.EMPTY ||
-                                                    this.board[1][field] == Field.EMPTY) {
-                                                return false;
+
+                                7 -> {
+                                    when (ring) {
+                                        0, 2 -> {
+                                            if (board[ring][0] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[1][field] == Field.EMPTY) {
+                                                return false
                                             }
                                         }
-                                        case 1 -> {
-                                            if (this.board[ring][0] == Field.EMPTY ||
-                                                    this.board[ring][field - 1] == Field.EMPTY ||
-                                                    this.board[0][field] == Field.EMPTY ||
-                                                    this.board[2][field] == Field.EMPTY) {
-                                                return false;
+
+                                        1 -> {
+                                            if (board[ring][0] == Field.EMPTY || board[ring][field - 1] == Field.EMPTY || board[0][field] == Field.EMPTY || board[2][field] == Field.EMPTY) {
+                                                return false
                                             }
                                         }
                                     }
@@ -380,35 +392,37 @@ class Game {
                         }
                     }
                 }
-                this.state = State.P1WIN;
-                return true;
+                state = State.P1WIN
+                true
             }
         }
-        return false;
+        return false
     }
 
-    public void switchCurrentPlayer() {
-        switch (this.currentPlayer) {
-            case P1 -> { this.currentPlayer = Player.P2; }
-            case P2 -> { this.currentPlayer = Player.P1; }
+    fun switchCurrentPlayer() {
+        when (currentPlayer) {
+            Player.P1 -> {
+                currentPlayer = Player.P2
+            }
+
+            Player.P2 -> {
+                currentPlayer = Player.P1
+            }
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Game))
-            return false;
-        Game game = (Game) o;
-        return Objects.equals(this.id, game.id) && Arrays.deepEquals(this.board, game.board) && Objects.equals(this.currentPlayer, game.currentPlayer) && Objects.equals(this.state, game.state);
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o !is Game) return false
+        val game = o
+        return id == game.id && Arrays.deepEquals(board, game.board) && currentPlayer == game.currentPlayer && state == game.state
     }
 
-    @Override
-    public int hashCode() { return Objects.hash(this.id, Arrays.hashCode(this.board), this.currentPlayer, this.state); }
+    override fun hashCode(): Int {
+        return Objects.hash(id, Arrays.hashCode(board), currentPlayer, state)
+    }
 
-    @Override
-    public String toString() {
-        return "Game{" + "id=" + this.id + ", board=" + Arrays.deepToString(this.board) + ", currentPlayer=" + this.currentPlayer + ", state=" + this.state + "}";
+    override fun toString(): String {
+        return "Game{" + "id=" + id + ", board=" + Arrays.deepToString(board) + ", currentPlayer=" + currentPlayer + ", state=" + state + "}"
     }
 }
