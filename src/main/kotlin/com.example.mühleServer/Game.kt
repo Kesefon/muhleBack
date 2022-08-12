@@ -68,7 +68,7 @@ internal class Game {
 
             1, 3, 5 -> {
                 if ((board[0][field] == board[1][field] &&
-                                board[0][field] == board[2][field] || board[ring][field] == board[ring][field + 1]) && board[ring][field] == board[ring][field - 1]) {
+                                board[0][field] == board[2][field]) || (board[ring][field] == board[ring][field + 1] && board[ring][field] == board[ring][field - 1])) {
                     return true
                 }
             }

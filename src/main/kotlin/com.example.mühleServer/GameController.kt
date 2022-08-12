@@ -14,8 +14,8 @@ import java.util.stream.Collectors
 internal class GameController(private val repository: GameRepository, private val assembler: GameModelAssembler) {
     @GetMapping("/games")
     fun all(): CollectionModel<EntityModel<Game>> {
-        val games = repository.findAll().stream()
-            .map { game: Game? -> assembler.toModel(game) }
+        val games = repository.findAll().filterNotNull().stream()
+            .map { game: Game -> assembler.toModel(game) }
             .collect(Collectors.toList())
         return CollectionModel.of(
             games, WebMvcLinkBuilder.linkTo(
@@ -37,15 +37,14 @@ internal class GameController(private val repository: GameRepository, private va
     @GetMapping("/games/{id}")
     fun one(@PathVariable id: Long): EntityModel<Game> {
         val game = repository.findById(id)
-            .orElseThrow { GameNotFoundException(id) }
+            .get()
         return assembler.toModel(game)
     }
 
     @PostMapping("/games/{id}/play/{ring}/{field}")
     fun play(@PathVariable id: Long, @PathVariable ring: Int, @PathVariable field: Int): ResponseEntity<*> {
-        val game = repository.findById(id)
-            .orElseThrow { GameNotFoundException(id) }
-        game.playTurn(ring, field)
+        val game = repository.findById(id).get()
+        game?.playTurn(ring, field)
         val entityModel = assembler.toModel(repository.save(game))
         return ResponseEntity
             .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
@@ -54,8 +53,7 @@ internal class GameController(private val repository: GameRepository, private va
 
     @PostMapping("/games/{id}/play")
     fun play(@PathVariable id: Long): ResponseEntity<*> {
-        val game = repository.findById(id)
-            .orElseThrow { GameNotFoundException(id) }
+        val game = repository.findById(id).get()
         val aiPlayer = game.currentPlayer
         while (aiPlayer === game.currentPlayer && !game.checkEnd()) {
             val random = Random()
