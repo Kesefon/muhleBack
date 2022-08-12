@@ -1,16 +1,16 @@
 package com.example.mühleServer
 
-import java.util.*
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Lob
+import kotlin.math.abs
 
 @Entity
 internal class Game {
     @Id
     @GeneratedValue
-    var id: Long? = null
+    var id: Long = 0
     var currentPlayer: Player
     var state: State
     private var previousState: State
@@ -19,14 +19,11 @@ internal class Game {
     var turn = 0
 
     @Lob
-    var board: Array<Array<Field?>>
+    var board: Array<Array<Field>>
 
     init {
         currentPlayer = Player.P1
-        board = Array(3) { arrayOfNulls(8) }
-        for (i in board.indices) {
-            Arrays.fill(board[i], Field.EMPTY)
-        }
+        board = Array(3) { Array(8) {Field.EMPTY} }
         state = State.EARLYGAME
         previousState = state
     }
@@ -221,9 +218,9 @@ internal class Game {
                         }
                     }
                 }
-                if (((Math.abs(selectedFieldR - movedFieldR) == 1 && selectedFieldN == movedFieldN &&
+                if (((abs(selectedFieldR - movedFieldR) == 1 && selectedFieldN == movedFieldN &&
                                 selectedFieldN%2 == 1) ||
-                                (Math.abs(selectedFieldN - movedFieldN) == 1 && selectedFieldR == movedFieldR) ||
+                                (abs(selectedFieldN - movedFieldN) == 1 && selectedFieldR == movedFieldR) ||
                                 (selectedFieldN == 0 && movedFieldN == 7 && selectedFieldR == movedFieldR) ||
                                 (selectedFieldN == 7 && movedFieldN == 0 && selectedFieldR == movedFieldR)) ||
                         jump
@@ -402,7 +399,6 @@ internal class Game {
                 true
             }
         }
-        return false
     }
 
     fun switchCurrentPlayer() {
@@ -415,20 +411,5 @@ internal class Game {
                 currentPlayer = Player.P1
             }
         }
-    }
-
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o !is Game) return false
-        val game = o
-        return id == game.id && Arrays.deepEquals(board, game.board) && currentPlayer == game.currentPlayer && state == game.state
-    }
-
-    override fun hashCode(): Int {
-        return Objects.hash(id, Arrays.hashCode(board), currentPlayer, state)
-    }
-
-    override fun toString(): String {
-        return "Game{" + "id=" + id + ", board=" + Arrays.deepToString(board) + ", currentPlayer=" + currentPlayer + ", state=" + state + "}"
     }
 }
