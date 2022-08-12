@@ -1,13 +1,12 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringApplication
+import org.springframework.boot.autoconfigure.SpringBootApplication
 
 @SpringBootApplication
-public class mühleApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(mühleApplication.class, args);
-	}
-
+object mühleApplication {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        SpringApplication.run(mühleApplication::class.java, *args)
+    }
 }

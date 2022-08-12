@@ -1,25 +1,20 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.ControllerAdvice
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.ResponseStatus
 
-class IllegalMoveException  extends RuntimeException {
-
-    IllegalMoveException(State state, int ring, int field) {
-        super("Illegal Move: State: " + state + " Move: " + ring + "/" + field);
-    }
-}
+internal class IllegalMoveException(state: State, ring: Int, field: Int) :
+    RuntimeException("Illegal Move: State: $state Move: $ring/$field")
 
 @ControllerAdvice
-class IllegalMoveAdvice {
-
+internal class IllegalMoveAdvice {
     @ResponseBody
-    @ExceptionHandler(IllegalMoveException.class)
+    @ExceptionHandler(IllegalMoveException::class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    String illegalMoveHandler(IllegalMoveException ex) {
-        return ex.getMessage();
+    fun illegalMoveHandler(ex: IllegalMoveException): String? {
+        return ex.message
     }
 }

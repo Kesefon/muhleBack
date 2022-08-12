@@ -1,6 +1,5 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaRepository
 
-interface GameRepository extends JpaRepository<Game, Long> {
-}
+internal interface GameRepository : JpaRepository<Game?, Long?>

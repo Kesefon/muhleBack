@@ -1,8 +1,5 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-public enum Field {
-    EMPTY,
-    P1,
-    P2,
-    MOVED
+enum class Field {
+    EMPTY, P1, P2, MOVED
 }

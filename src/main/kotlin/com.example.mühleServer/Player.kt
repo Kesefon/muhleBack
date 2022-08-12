@@ -1,6 +1,5 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-public enum Player {
-    P1,
-    P2
+enum class Player {
+    P1, P2
 }

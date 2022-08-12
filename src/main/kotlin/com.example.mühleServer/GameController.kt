@@ -1,91 +1,83 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
-import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
+import org.springframework.hateoas.CollectionModel
+import org.springframework.hateoas.EntityModel
+import org.springframework.hateoas.IanaLinkRelations
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import java.util.*
+import java.util.stream.Collectors
 
 @RestController
-@CrossOrigin(origins = "*")
-class GameController {
-
-    private final GameRepository repository;
-
-    private final GameModelAssembler assembler;
-
-    GameController(GameRepository repository, GameModelAssembler assembler) {
-        this.repository = repository;
-        this.assembler = assembler;
-    }
-
+@CrossOrigin(origins = ["*"])
+internal class GameController(private val repository: GameRepository, private val assembler: GameModelAssembler) {
     @GetMapping("/games")
-    CollectionModel<EntityModel<Game>> all() {
-        List<EntityModel<Game>> games = repository.findAll().stream()
-                .map(assembler::toModel)
-                .collect(Collectors.toList());
-        return CollectionModel.of(games, linkTo(methodOn(GameController.class).all()).withSelfRel());
+    fun all(): CollectionModel<EntityModel<Game>> {
+        val games = repository.findAll().stream()
+            .map { game: Game? -> assembler.toModel(game) }
+            .collect(Collectors.toList())
+        return CollectionModel.of(
+            games, WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(
+                    GameController::class.java
+                ).all()
+            ).withSelfRel()
+        )
     }
 
     @PostMapping("/games")
-    ResponseEntity<?> newGame() {
-
-        EntityModel<Game> entityModel = assembler.toModel(repository.save(new Game()));
+    fun newGame(): ResponseEntity<*> {
+        val entityModel = assembler.toModel(repository.save(Game()))
         return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel)
     }
 
     @GetMapping("/games/{id}")
-    EntityModel<Game> one(@PathVariable Long id) {
-        Game game = repository.findById(id)
-                .orElseThrow( () -> new GameNotFoundException(id));
-        return assembler.toModel(game);
+    fun one(@PathVariable id: Long): EntityModel<Game> {
+        val game = repository.findById(id)
+            .orElseThrow { GameNotFoundException(id) }
+        return assembler.toModel(game)
     }
 
     @PostMapping("/games/{id}/play/{ring}/{field}")
-    ResponseEntity<?> play(@PathVariable Long id,@PathVariable int ring, @PathVariable int field) {
-        Game game = repository.findById(id)
-                .orElseThrow( () -> new GameNotFoundException(id));
-        game.playTurn(ring, field);
-        EntityModel<Game> entityModel = assembler.toModel(repository.save(game));
+    fun play(@PathVariable id: Long, @PathVariable ring: Int, @PathVariable field: Int): ResponseEntity<*> {
+        val game = repository.findById(id)
+            .orElseThrow { GameNotFoundException(id) }
+        game.playTurn(ring, field)
+        val entityModel = assembler.toModel(repository.save(game))
         return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel)
     }
 
     @PostMapping("/games/{id}/play")
-    ResponseEntity<?> play(@PathVariable Long id) {
-        Game game = repository.findById(id)
-                .orElseThrow( () -> new GameNotFoundException(id));
-        Player aiPlayer = game.getCurrentPlayer();
-        while (aiPlayer == game.getCurrentPlayer() && !game.checkEnd()) {
-            Random random = new Random();
-            int selectedFieldN = random.nextInt(8);
-            int selectedFieldR = random.nextInt(3);
+    fun play(@PathVariable id: Long): ResponseEntity<*> {
+        val game = repository.findById(id)
+            .orElseThrow { GameNotFoundException(id) }
+        val aiPlayer = game.currentPlayer
+        while (aiPlayer === game.currentPlayer && !game.checkEnd()) {
+            val random = Random()
+            val selectedFieldN = random.nextInt(8)
+            val selectedFieldR = random.nextInt(3)
             try {
-                System.out.print("[" + game.getId() + "]Ai try: " + game.getState() + " \t" + selectedFieldR + "/" + selectedFieldN);
-                game.playTurn(selectedFieldR, selectedFieldN);
-                System.out.print("\n");
-            } catch (IllegalMoveException e) {
-                System.out.print(" [Failed]\n");
+                print("[" + game.id + "]Ai try: " + game.state + " \t" + selectedFieldR + "/" + selectedFieldN)
+                game.playTurn(selectedFieldR, selectedFieldN)
+                print("\n")
+            } catch (e: IllegalMoveException) {
+                print(" [Failed]\n")
             }
         }
-        EntityModel<Game> entityModel = assembler.toModel(repository.save(game));
+        val entityModel = assembler.toModel(repository.save(game))
         return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
-                .body(entityModel);
+            .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+            .body(entityModel)
     }
 
     @DeleteMapping("/games/{id}/remove")
-    ResponseEntity<?> remove(@PathVariable Long id) {
-        repository.deleteById(id);
-        return ResponseEntity.noContent().build();
+    fun remove(@PathVariable id: Long): ResponseEntity<*> {
+        repository.deleteById(id)
+        return ResponseEntity.noContent().build<Any>()
     }
 }

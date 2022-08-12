@@ -1,24 +1,29 @@
-package com.example.mühleServer;
+package com.example.mühleServer
 
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.RepresentationModelAssembler;
-import org.springframework.stereotype.Component;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import org.springframework.hateoas.EntityModel
+import org.springframework.hateoas.server.RepresentationModelAssembler
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder
+import org.springframework.stereotype.Component
 
 @Component
-class GameModelAssembler implements RepresentationModelAssembler<Game, EntityModel<Game>> {
-
-    @Override
-    public EntityModel<Game> toModel(Game game) {
-        EntityModel<Game> gameModel = EntityModel.of(game,
-                linkTo(methodOn(GameController.class).one(game.getId())).withSelfRel(),
-                linkTo(methodOn(GameController.class).all()).withRel("games"));
-
-        if (game.getState() == State.EARLYGAME || game.getState() == State.LATEGAME || game.getState() == State.MOVING || game.getState() == State.STEALING) {
-            gameModel.add(linkTo(methodOn(GameController.class).play(game.getId())).withRel("play"));
-            gameModel.add(linkTo(methodOn(GameController.class).remove(game.getId())).withRel("remove"));
+internal class GameModelAssembler : RepresentationModelAssembler<Game, EntityModel<Game>> {
+    override fun toModel(game: Game): EntityModel<Game> {
+        val gameModel = EntityModel.of(
+            game,
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(GameController::class.java).one(game.id)).withSelfRel(),
+            WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(GameController::class.java).all()).withRel("games")
+        )
+        if (game.state === State.EARLYGAME || game.state === State.LATEGAME || game.state === State.MOVING || game.state === State.STEALING) {
+            gameModel.add(
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(GameController::class.java).play(game.id))
+                    .withRel("play")
+            )
+            gameModel.add(
+                WebMvcLinkBuilder.linkTo(
+                    WebMvcLinkBuilder.methodOn(GameController::class.java).remove(game.id)
+                ).withRel("remove")
+            )
         }
-        return gameModel;
+        return gameModel
     }
 }
