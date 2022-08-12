@@ -40,7 +40,7 @@ class Game {
 
     public Player getCurrentPlayer() { return this.currentPlayer; }
 
-    public void setCurrentPlayer(Player player) { this.currentPlayer = currentPlayer; }
+    public void setCurrentPlayer(Player player) { this.currentPlayer = player; }
 
     public Field[][] getBoard() { return this.board; }
 
